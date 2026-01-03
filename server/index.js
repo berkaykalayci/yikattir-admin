@@ -50,18 +50,32 @@ const initDB = async () => {
 };
 initDB();
 
-// --- MOBİL API ROTALARI ---
-app.use('/auth', authRouter);
-app.use('/businesses', businessesRouter);
-app.use('/appointments', appointmentsRouter);
-app.use('/notifications', notificationsRouter);
-app.use('/users', usersRouter);
-app.use('/favorites', favoritesRouter);
-app.use('/services', servicesRouter);
-app.use('/reviews', reviewsRouter);
-app.use('/addresses', addressesRouter);
-app.use('/payment-methods', paymentMethodsRouter);
-app.use('/blocked-slots', blockedSlotsRouter);
+// --- MOBİL ROTA YÜKLEYİCİ (Güvenli) ---
+const loadRoutes = () => {
+  console.log('Routes yükleniyor...');
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(path.join(__dirname, 'routes'))) {
+      app.use('/auth', require('./routes/auth').router || require('./routes/auth'));
+      app.use('/businesses', require('./routes/businesses'));
+      app.use('/appointments', require('./routes/appointments'));
+      app.use('/notifications', require('./routes/notifications'));
+      app.use('/users', require('./routes/users'));
+      app.use('/favorites', require('./routes/favorites'));
+      app.use('/services', require('./routes/services'));
+      app.use('/reviews', require('./routes/reviews'));
+      app.use('/addresses', require('./routes/addresses'));
+      app.use('/payment-methods', require('./routes/paymentMethods'));
+      app.use('/blocked-slots', require('./routes/blockedSlots'));
+      console.log('Tüm routes yüklendi');
+    } else {
+      console.error('UYARI: "routes" klasörü bulunamadı. Mobil API pasif.');
+    }
+  } catch (err) {
+    console.error('Route yükleme hatası:', err.message);
+  }
+};
+loadRoutes();
 
 // --- ADMIN PANEL MIDDLEWARE ---
 const authenticateToken = (req, res, next) => {
