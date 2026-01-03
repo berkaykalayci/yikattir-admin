@@ -148,6 +148,38 @@ app.get('/api/businesses/:id/details', authenticateToken, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Gelir Analizi (Haftalık, Aylık, Yıllık)
+app.get('/api/businesses/:id/revenue', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Haftalık (Son 7 gün, gün bazlı)
+    const weekly = await pool.query(`
+      SELECT TO_CHAR(date, 'DD/MM') as label, SUM("totalPrice")::float as value
+      FROM "Appointment"
+      WHERE "businessId" = $1 AND status = 'COMPLETED' AND date > NOW() - INTERVAL '7 days'
+      GROUP BY label, date ORDER BY date ASC
+    `, [id]);
+
+    // Aylık (Son 30 gün, gün bazlı)
+    const monthly = await pool.query(`
+      SELECT TO_CHAR(date, 'DD/MM') as label, SUM("totalPrice")::float as value
+      FROM "Appointment"
+      WHERE "businessId" = $1 AND status = 'COMPLETED' AND date > NOW() - INTERVAL '30 days'
+      GROUP BY label, date ORDER BY date ASC
+    `, [id]);
+
+    // Yıllık (Son 12 ay, ay bazlı)
+    const yearly = await pool.query(`
+      SELECT TO_CHAR(date, 'YYYY-MM') as label, SUM("totalPrice")::float as value
+      FROM "Appointment"
+      WHERE "businessId" = $1 AND status = 'COMPLETED' AND date > NOW() - INTERVAL '1 year'
+      GROUP BY label ORDER BY MIN(date) ASC
+    `, [id]);
+
+    res.json({ weekly: weekly.rows, monthly: monthly.rows, yearly: yearly.rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // İşletme Durum Güncelle
 app.patch('/api/businesses/:id/status', authenticateToken, async (req, res) => {
   const { id } = req.params; const { isActive } = req.body;

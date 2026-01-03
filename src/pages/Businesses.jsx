@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { 
   Building2, User, MapPin, Star, Calendar, ShieldCheck, 
   ShieldAlert, Phone, Clock, Image as ImageIcon, 
-  ChevronRight, MessageSquare, ClipboardList, Info, Search, Key, Edit2, X as XIcon, Mail, Plus, Trash2, Save, Tag
+  ChevronRight, MessageSquare, ClipboardList, Info, Search, Key, Edit2, X as XIcon, Mail, Plus, Trash2, Save, Tag, BarChart3
 } from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  LineChart, Line, AreaChart, Area 
+} from 'recharts';
 import { API_URL } from '../config';
 
 export function BusinessesPage() {
@@ -13,6 +17,8 @@ export function BusinessesPage() {
   const [detailedData, setDetailedData] = useState({ appointments: [], reviews: [], services: [] });
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'appointments', 'reviews', 'services'
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [revenueData, setRevenueData] = useState({ weekly: [], monthly: [], yearly: [] });
+  const [revenueLoading, setRevenueLoading] = useState(false);
   const [filter, setFilter] = useState({ city: '', district: '' });
   const [editingOwner, setEditingOwner] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -56,6 +62,22 @@ export function BusinessesPage() {
       });
   };
 
+  const fetchRevenueData = (id) => {
+    setRevenueLoading(true);
+    fetch(`${API_URL}/api/businesses/${id}/revenue`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRevenueData(data);
+        setRevenueLoading(false);
+      })
+      .catch(err => {
+        console.error('Gelir verileri yüklenemedi:', err);
+        setRevenueLoading(false);
+      });
+  };
+
   useEffect(() => {
     fetchBusinesses();
   }, []);
@@ -64,6 +86,7 @@ export function BusinessesPage() {
     setSelectedBusiness(business);
     setActiveTab('info');
     fetchBusinessDetails(business.id);
+    fetchRevenueData(business.id);
   };
 
   const toggleStatus = async (id, currentStatus) => {
@@ -343,9 +366,10 @@ export function BusinessesPage() {
               </div>
 
               {/* Sekmeler */}
-              <div className="flex px-6 border-b border-gray-100">
+              <div className="flex px-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
                 {[
                   { id: 'info', label: 'Genel Bilgiler', icon: Info },
+                  { id: 'revenue', label: 'Gelir Analizi', icon: BarChart3 },
                   { id: 'services', label: 'Hizmetler', icon: Tag, count: detailedData.services.length },
                   { id: 'appointments', label: 'Randevular', icon: ClipboardList, count: detailedData.appointments.length },
                   { id: 'reviews', label: 'Yorumlar', icon: MessageSquare, count: detailedData.reviews.length }
@@ -444,7 +468,108 @@ export function BusinessesPage() {
                           ))}
                         </div>
                         {detailedData.services.length === 0 && (
-                          <div className="py-10 text-center text-gray-400 italic bg-gray-50 rounded-2xl">Bu işletmeye ait hizmet bulunmuyor.</div>
+                          <div className="py-10 text-center text-gray-400 italic bg-gray-50 rounded-2xl">Bu işletmeye ait hizmet bulunmuyor.                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* GELİR ANALİZİ SEKMESİ */}
+                    {activeTab === 'revenue' && (
+                      <div className="space-y-8">
+                        {revenueLoading ? (
+                          <div className="py-20 text-center text-gray-400 italic">Gelir verileri analiz ediliyor...</div>
+                        ) : (
+                          <>
+                            {/* Özet Kartları */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <RevenueStatCard 
+                                label="Haftalık Toplam" 
+                                value={revenueData.weekly.reduce((acc, curr) => acc + curr.value, 0)} 
+                                color="bg-indigo-50 text-indigo-600"
+                              />
+                              <RevenueStatCard 
+                                label="Aylık Toplam" 
+                                value={revenueData.monthly.reduce((acc, curr) => acc + curr.value, 0)} 
+                                color="bg-emerald-50 text-emerald-600"
+                              />
+                              <RevenueStatCard 
+                                label="Yıllık Toplam" 
+                                value={revenueData.yearly.reduce((acc, curr) => acc + curr.value, 0)} 
+                                color="bg-blue-50 text-blue-600"
+                              />
+                            </div>
+
+                            {/* Haftalık Grafik */}
+                            <div className="bg-white p-6 border border-gray-100 rounded-2xl shadow-sm">
+                              <h4 className="text-sm font-bold text-gray-700 mb-6 flex items-center">
+                                <Clock size={16} className="mr-2 text-indigo-500" /> Haftalık Performans (Son 7 Gün)
+                              </h4>
+                              <div className="h-64 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={revenueData.weekly}>
+                                    <defs>
+                                      <linearGradient id="colorWeekly" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} tickFormatter={(value) => `₺${value}`} />
+                                    <Tooltip 
+                                      contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                                      formatter={(value) => [`₺${value.toLocaleString()}`, 'Gelir']}
+                                    />
+                                    <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorWeekly)" />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Aylık Grafik */}
+                              <div className="bg-white p-6 border border-gray-100 rounded-2xl shadow-sm">
+                                <h4 className="text-sm font-bold text-gray-700 mb-6 flex items-center">
+                                  <Calendar size={16} className="mr-2 text-emerald-500" /> Aylık Performans (Son 30 Gün)
+                                </h4>
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={revenueData.monthly}>
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                                      <Tooltip 
+                                        contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                                        formatter={(value) => [`₺${value.toLocaleString()}`, 'Gelir']}
+                                      />
+                                      <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              </div>
+
+                              {/* Yıllık Grafik */}
+                              <div className="bg-white p-6 border border-gray-100 rounded-2xl shadow-sm">
+                                <h4 className="text-sm font-bold text-gray-700 mb-6 flex items-center">
+                                  <Star size={16} className="mr-2 text-blue-500" /> Yıllık Performans (Ay Bazlı)
+                                </h4>
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={revenueData.yearly}>
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                                      <Tooltip 
+                                        contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                                        formatter={(value) => [`₺${value.toLocaleString()}`, 'Gelir']}
+                                      />
+                                      <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} dot={{r: 4, fill: '#3b82f6'}} activeDot={{r: 6}} />
+                                    </LineChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     )}
@@ -778,6 +903,15 @@ export function BusinessesPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function RevenueStatCard({ label, value, color }) {
+  return (
+    <div className={`p-4 rounded-2xl border border-gray-100 ${color.split(' ')[0]} bg-opacity-50`}>
+      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{label}</p>
+      <p className={`text-xl font-black mt-1 ${color.split(' ')[1]}`}>₺{value.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
     </div>
   );
 }
