@@ -1,4 +1,4 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function Header() {
@@ -18,19 +18,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 lg:ml-64">
-      <div className="flex items-center justify-between h-full px-8">
-        {/* Search */}
-        <div className="relative w-64">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="text-gray-400" size={18} />
-          </span>
-          <input
-            className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 border-none rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
-            placeholder="Ara..."
-            type="text"
-          />
-        </div>
-
+      <div className="flex items-center justify-end h-full px-8">
         {/* Actions */}
         <div className="flex items-center space-x-4">
           <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
