@@ -223,7 +223,7 @@ export function SettingsPage() {
   return (
     <div className="space-y-6 pb-20 relative">
       <div className="flex justify-between items-end">
-        <div>
+      <div>
           <h1 className="text-2xl font-bold text-gray-800">Sistem Ayarları</h1>
           <p className="text-gray-500 text-sm mt-1">Uygulama tercihlerini, güvenliği ve yönetici hesaplarını buradan yönetin.</p>
         </div>
@@ -288,19 +288,19 @@ export function SettingsPage() {
             </div>
             <form onSubmit={handleSettingsSubmit} className="space-y-6">
               <div className="space-y-6">
-                <div>
+            <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <Mail size={16} className="mr-2 text-indigo-500" />
                     İletişim E-postası
                   </label>
-                  <input
-                    type="email"
+              <input
+                type="email"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all font-medium text-gray-600"
                     value={settings.contactEmail}
                     onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-                  />
-                </div>
-                <div>
+              />
+            </div>
+            <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <Shield size={16} className="mr-2 text-indigo-500" />
                     Tema Tercihi
@@ -310,23 +310,23 @@ export function SettingsPage() {
                     value={settings.theme}
                     onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
                   >
-                    <option>Açık</option>
-                    <option>Koyu</option>
-                    <option>Sistem</option>
-                  </select>
-                </div>
-              </div>
+                <option>Açık</option>
+                <option>Koyu</option>
+                <option>Sistem</option>
+              </select>
+            </div>
+          </div>
               <div className="pt-6 border-t border-gray-50 flex justify-end">
-                <button
-                  type="submit"
+            <button
+              type="submit"
                   disabled={saving}
                   className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
-                >
+            >
                   {saving ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
-                </button>
-              </div>
-            </form>
+            </button>
           </div>
+        </form>
+      </div>
         )}
 
         {/* ŞİFRE İŞLEMLERİ */}

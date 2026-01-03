@@ -96,23 +96,23 @@ export function UsersPage() {
         {/* Kullanıcı Listesi */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr className="text-sm font-medium text-gray-500">
+        <table className="w-full text-left">
+          <thead className="bg-gray-50 border-b border-gray-100">
+            <tr className="text-sm font-medium text-gray-500">
                   <th className="px-6 py-4">Müşteri Bilgisi</th>
                   <th className="px-6 py-4">Konum</th>
-                  <th className="px-6 py-4">Durum</th>
+              <th className="px-6 py-4">Durum</th>
                   <th className="px-6 py-4 text-right">İşlem</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
                 {users.length > 0 ? users.map((user) => (
                   <tr 
                     key={user.id} 
                     className={`text-sm hover:bg-gray-50 transition-colors cursor-pointer ${selectedUser?.id === user.id ? 'bg-blue-50/50' : ''}`}
                     onClick={() => setSelectedUser(user)}
                   >
-                    <td className="px-6 py-4">
+                <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3">
                           {(user.name || 'U').charAt(0).toUpperCase()}
@@ -125,15 +125,15 @@ export function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {user.city ? `${user.city}, ${user.district || ''}` : 'Belirtilmemiş'}
-                    </td>
-                    <td className="px-6 py-4">
+                </td>
+                <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
                         user.role === 'SUSPENDED' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                      }`}>
+                  }`}>
                         {user.role === 'SUSPENDED' ? 'ASKIDA' : 'AKTİF'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -151,12 +151,12 @@ export function UsersPage() {
                   <tr>
                     <td colSpan="4" className="px-6 py-8 text-center text-gray-400 italic">
                       Henüz müşteri bulunmuyor.
-                    </td>
-                  </tr>
+                </td>
+              </tr>
                 )}
-              </tbody>
-            </table>
-          </div>
+          </tbody>
+        </table>
+      </div>
         </div>
 
         {/* Detay Paneli */}

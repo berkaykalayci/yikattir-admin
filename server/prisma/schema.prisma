@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String?
+  email          String          @unique
+  phone          String?         @unique
+  password       String
+  city           String?
+  district       String?
+  role           Role            @default(CUSTOMER)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  businesses     Business[]
+  appointments   Appointment[]   @relation("CustomerAppointments")
+  notifications  Notification[]
+  addresses      Address[]
+  paymentMethods PaymentMethod[]
+  cards          Card[]         @relation("CustomerCards")
+  favorites      Favorite[]
+}
+
+model Business {
+  workingHours WorkingHour[]
+  reviews      Review[]
+  favorites    Favorite[]
+  blockedSlots BlockedSlot[]
+  id           String        @id @default(cuid())
+  ownerId      String
+  owner        User          @relation(fields: [ownerId], references: [id])
+  name         String
+  type         String
+  city         String
+  district     String
+  address      String
+  tcNo         String?       @unique
+  vergiNo      String?       @unique
+  rating       Float         @default(0)
+  isActive     Boolean       @default(false)
+  isOpen       Boolean       @default(true)
+  capacity     Int           @default(3)
+  slotIntervalMin Int        @default(30)
+  setupCompleted Boolean     @default(false)
+  imageUrl     String?
+  logoUrl      String?
+  lat          Float?
+  lng          Float?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  services     Service[]
+  appointments Appointment[] @relation("BusinessAppointments")
+}
+
+model Service {
+  id          String        @id @default(cuid())
+  businessId  String
+  business    Business      @relation(fields: [businessId], references: [id])
+  name        String
+  price       Int
+  durationMin Int
+  vehicleType String
+  addons      String[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Appointment {
+  id              String    @id @default(cuid())
+  businessId      String
+  business        Business  @relation("BusinessAppointments", fields: [businessId], references: [id])
+  customerId      String
+  customer        User      @relation("CustomerAppointments", fields: [customerId], references: [id])
+  serviceId       String
+  service         Service   @relation(fields: [serviceId], references: [id])
+  selectedServices Json?    // Çoklu hizmet seçimi için JSON array
+  date            DateTime
+  time            String
+  vehicleType     String
+  plate           String
+  status          String    @default("PENDING")
+  notes           String?
+  totalPrice      Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  reviews         Review[]
+}
+
+model WorkingHour {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  dayOfWeek  Int
+  isOpen     Boolean
+  openTime   String?
+  closeTime  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  businessId   String
+  business     Business   @relation(fields: [businessId], references: [id])
+  appointmentId String    @unique
+  appointment  Appointment @relation(fields: [appointmentId], references: [id])
+  rating       Int
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  title        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  district     String
+  postalCode   String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  details   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Card {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   User     @relation("CustomerCards", fields: [customerId], references: [id])
+  cardNumber String
+  lastFour   String
+  expiryDate String
+  cvv        String
+  cardHolder String
+  cardType   String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model BlockedSlot {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  date       DateTime
+  time       String
+  reason     String?  // "maintenance", "break", "personal", etc.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([businessId, date, time])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, businessId])
+}
+
+enum Role {
+  CUSTOMER
+  BUSINESS
+  ADMIN
+}

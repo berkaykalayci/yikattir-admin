@@ -71,9 +71,9 @@ export function Sidebar({ onLogout }) {
         )}
       >
         <div className="flex flex-col h-full">
-              <div className="flex items-center justify-center h-16 border-b border-gray-200">
+          <div className="flex items-center justify-center h-16 border-b border-gray-200">
                 <h1 className="text-xl font-bold text-primary">Yıkattır Admin Panel</h1>
-              </div>
+          </div>
 
           <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
             {menuItems.map((item) => (

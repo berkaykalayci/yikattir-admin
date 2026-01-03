@@ -77,13 +77,13 @@ export function Dashboard() {
         </div>
         <div className="p-6">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
+          <table className="w-full text-left">
+            <thead>
                 <tr className="text-sm font-medium text-gray-400 border-b border-gray-50">
-                  <th className="pb-4">Müşteri</th>
+                <th className="pb-4">Müşteri</th>
                   <th className="pb-4 text-center">Durum</th>
-                  <th className="pb-4">Tutar</th>
-                  <th className="pb-4">Tarih</th>
+                <th className="pb-4">Tutar</th>
+                <th className="pb-4">Tarih</th>
                   <th className="pb-4 text-right">Detay</th>
                 </tr>
               </thead>
@@ -121,10 +121,10 @@ export function Dashboard() {
                     <td colSpan="5" className="py-8 text-center text-gray-400 italic">Henüz randevu bulunmuyor.</td>
                   </tr>
                 )}
-              </tbody>
-            </table>
-          </div>
+            </tbody>
+          </table>
         </div>
+      </div>
       </div>
 
       {/* Randevu Detay Modal */}
