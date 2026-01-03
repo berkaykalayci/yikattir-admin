@@ -433,6 +433,36 @@ app.patch('/api/appointments/:id/datetime', authenticateToken, async (req, res) 
   }
 });
 
+// Randevu Durum Güncelle
+app.patch('/api/appointments/:id/status', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    await pool.query(
+      'UPDATE "Appointment" SET status = $1, "updatedAt" = NOW() WHERE id = $2',
+      [status, id]
+    );
+    res.json({ message: 'Randevu durumu güncellendi' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Kullanıcı Durum Güncelle (Askıya Al/Aktifleştir)
+app.patch('/api/users/:id/status', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  try {
+    await pool.query(
+      'UPDATE "User" SET role = $1, "updatedAt" = NOW() WHERE id = $2',
+      [role, id]
+    );
+    res.json({ message: 'Kullanıcı durumu güncellendi' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Hizmet Güncelle
 app.patch('/api/services/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
