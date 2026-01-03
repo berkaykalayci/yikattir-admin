@@ -1,3 +1,4 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
@@ -13,13 +14,19 @@ app.use(cors({ origin: '*', methods: '*', allowedHeaders: '*' }));
 app.use(express.json());
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: false },
-  connectionTimeoutMillis: 5000
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Veritabanı bağlantı testi
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error('Veritabanı bağlantı hatası:', err.stack);
+  }
+  console.log('Veritabanına başarıyla bağlanıldı.');
+  release();
 });
 
 // Veritabanı tablolarını başlat
