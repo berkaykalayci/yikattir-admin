@@ -46,7 +46,10 @@ app.post('/api/login', async (req, res) => {
     if (!isMatch) return res.status(401).json({ error: 'E-posta veya şifre hatalı' });
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
     res.json({ token, user: { name: user.name, email: user.email, role: user.role } });
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  } catch (err) { 
+    console.error('Giriş Hatası Detayı:', err); // Sunucu loguna yazar
+    res.status(500).json({ error: 'Sunucu hatası: ' + err.message }); // Tarayıcıya hata mesajını gönderir
+  }
 });
 
 const authenticateToken = (req, res, next) => {
