@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ShieldCheck, Lock, Mail } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { API_URL } from '../config';
 
 export function LoginPage({ onLogin }) {
@@ -7,22 +8,32 @@ export function LoginPage({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const captchaRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const captchaToken = captchaRef.current.getValue();
+    if (!captchaToken) {
+      setError('Lütfen robot olmadığınızı doğrulayın.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captchaToken }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // Hata durumunda captcha'yı sıfırla
+        captchaRef.current.reset();
         throw new Error(data.error || 'Giriş yapılamadı');
       }
 
@@ -43,7 +54,7 @@ export function LoginPage({ onLogin }) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-full mb-4">
             <ShieldCheck size={32} />
           </div>
-              <h1 className="text-2xl font-bold text-gray-800">Yıkattır Admin Panel</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Yıkattır Admin Panel</h1>
           <p className="text-gray-500">Devam etmek için giriş yapın</p>
         </div>
 
@@ -86,6 +97,13 @@ export function LoginPage({ onLogin }) {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="flex justify-center py-2">
+            <ReCAPTCHA
+              ref={captchaRef}
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc-SEQsAAAAAFWCe66q_8Gxpz0w1_dy6CJIZI2H'} 
+            />
           </div>
 
           <button

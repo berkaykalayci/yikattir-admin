@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
 
@@ -93,8 +94,22 @@ const authenticateToken = (req, res, next) => {
 
 // Login
 app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, captchaToken } = req.body;
+  
   try {
+    // reCAPTCHA Doğrulaması
+    if (!captchaToken) {
+      return res.status(400).json({ error: 'CAPTCHA doğrulaması gerekli' });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Varsayılan test secret key
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+    
+    const captchaResponse = await axios.post(verificationUrl);
+    if (!captchaResponse.data.success) {
+      return res.status(400).json({ error: 'CAPTCHA doğrulaması başarısız' });
+    }
+
     const result = await pool.query('SELECT * FROM "User" WHERE email = $1', [email]);
     const user = result.rows[0];
     if (!user) return res.status(401).json({ error: 'Hatalı giriş' });
