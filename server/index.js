@@ -34,6 +34,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
 app.use(cors({ origin: '*', methods: '*', allowedHeaders: '*' }));
 app.use(express.json());
+
+// JSON Parse hatalarını yakalamak için middleware ekleyelim
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Geçersiz JSON formatı' });
+  }
+  next();
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Postgres Pool (Admin Paneli Sorguları İçin)
